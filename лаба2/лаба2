@@ -1,0 +1,134 @@
+import cv2
+import numpy as np
+
+# Завантаження зображення
+image = cv2.imread('images/1.jpg')
+
+# Отримання висоти та ширини зображення
+height, width = image.shape[:2]
+
+
+
+# Задання матриці трансформації для зсуву
+shifted_filter = np.float32([[1, 0, 10], [0, 1, 20], [0, 0, 1]])
+
+# Застосування зсуву до зображення
+shifted_result = cv2.warpAffine(image, shifted_filter[:2, :], (image.shape[1], image.shape[0]))
+
+
+
+# Створення фільтру Інверсії
+inversion_filter = np.array([[0, 1, 0], [1, -4, 1], [0, 1, 0]], dtype=np.float32)
+
+# Застосування фільтру
+inversion_result = cv2.filter2D(image, -1, inversion_filter)
+
+
+# Створення матриці фільтру Гаусса розміром 11x11
+gauss_filter = np.array([
+    [1,  2,  1,  2,  4,  2,  1,  2,  1,  2,  1],
+    [2,  4,  2,  1,  2,  1,  2,  4,  2,  1,  2],
+    [1,  2,  1,  2,  4,  2,  1,  2,  1,  2,  1],
+    [2,  4,  2,  1,  2,  1,  2,  4,  2,  1,  2],
+    [1,  2,  1,  2,  4,  2,  1,  2,  1,  2,  1],
+    [2,  4,  2,  1,  2,  1,  2,  4,  2,  1,  2],
+    [1,  2,  1,  2,  4,  2,  1,  2,  1,  2,  1],
+    [2,  4,  2,  1,  2,  1,  2,  4,  2,  1,  2],
+    [1,  2,  1,  2,  4,  2,  1,  2,  1,  2,  1],
+    [2,  4,  2,  1,  2,  1,  2,  4,  2,  1,  2],
+    [1,  2,  1,  2,  4,  2,  1,  2,  1,  2,  1]
+], dtype=np.float32) * (1/16)
+
+# Застосування фільтру до зображення
+
+gauss_result = cv2.filter2D(image, -1, gauss_filter)
+
+
+# Матриця Розмиття "рух по дiагоналi"(розмiр фiльтра 7х7)
+blur_filter = np.array([[1, 0, 0, 0, 0, 0, 0],
+ [0, 1, 0, 0, 0, 0, 0],
+ [0, 0, 1, 0, 0, 0, 0],
+ [0, 0, 0, 1, 0, 0, 0],
+ [0, 0, 0, 0, 1, 0, 0],
+ [0, 0, 0, 0, 0, 1, 0],
+ [0, 0, 0, 0, 0, 0, 1]], dtype=np.float32) * (1/3) 
+
+# Застосування фільтру до зображення
+blur_result = cv2.filter2D(image, -1, blur_filter)
+
+
+# Створення фільтру підвищення різкості
+sharp_filter = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]], dtype=np.float32)
+
+# Застосування фільтру
+sharp_result = cv2.filter2D(image, -1, sharp_filter)
+
+
+# Створення фільтру Собеля
+sobel_filter = np.array([[-1, 0, 1],
+[-2, 0, 2],
+[-1, 0, 1]])
+
+# Застосування фільтру Собеля до зображення
+sobel_result = cv2.filter2D(image, -1, sobel_filter)
+
+
+# Створення фільтра "Границі"
+border_filter = np.array([[-1, -1, -1],
+[-1,  8, -1],
+[-1, -1, -1]])
+
+# Застосування фільтра
+border_result = cv2.filter2D(image, -1, border_filter)
+
+
+# Створення матриці фільтру розрізнення
+cut_filter = np.array([
+    [0, 1, 0],
+    [0, 0, 0],
+    [0, -1, 0]
+])
+
+# Застосування фільтру до зображення
+cut_result = cv2.filter2D(image, -1, cut_filter)
+
+
+
+# Показати початкове зображення
+cv2.imshow('Initial image', image)
+
+# Показуємо та зберігаємо зміщене зображення
+cv2.imshow('Shifted image', shifted_result)
+cv2.imwrite("images/shifted_image.jpg", shifted_result)
+
+# Показуємо та зберігаємо інверсійне зображення
+cv2.imshow('Image with inversion', inversion_result)
+cv2.imwrite("images/inversion_image.jpg", inversion_result)
+
+# Показуємо та зберігаємо зображення згладжуванне по Гауссу
+cv2.imshow('Gaussian filtered image', gauss_result)
+cv2.imwrite("images/gauss_image.jpg", gauss_result)
+
+# Показуємо та зберігаємо розмите зображення
+cv2.imshow('Blurred image', blur_result)
+cv2.imwrite("images/blur_image.jpg", blur_result)
+
+# Показуємо та зберігаємо зображення з підвищенною різкостю
+cv2.imshow('Image with increased sharpness', sharp_result)
+cv2.imwrite("images/sharp_image.jpg", sharp_result)
+
+# Показуємо та зберігаємо зображення з обробкою фільтром Собеля
+cv2.imshow('Image with a Sobel filter', sobel_result)
+cv2.imwrite("images/sobel_image.jpg", sobel_result)
+
+# Показуємо та зберігаємо зображення з фільтром "Границі"
+cv2.imshow('Image with border filter', border_result)
+cv2.imwrite("images/border_image.jpg", border_result)
+
+# Показуємо та зберігаємо зображення з фільтром розрізнення
+cv2.imshow('Image with clipping filter', cut_result)
+cv2.imwrite("images/cut_image.jpg", cut_result)
+
+
+cv2.waitKey(0)
+cv2.destroyAllWindows()
