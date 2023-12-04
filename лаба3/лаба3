@@ -1,0 +1,82 @@
+import cv2
+import numpy as np
+
+# Завантаження зображення
+image = cv2.imread('images/1.jpg', cv2.IMREAD_GRAYSCALE)
+
+# Визначення фільтра (якщо використовуєте якийсь конкретний)
+filter = np.array([[1, 1, 1],
+                   [1, 1, 1],
+                   [1, 1, 1]])
+
+def handler_erosion(img, filter):
+    img_rows, img_cols = img.shape
+    filter_rows, filter_cols = filter.shape
+    
+    eroded_image = np.zeros((img_rows, img_cols), dtype=np.uint8)
+
+    for r in range(1, img_rows - 1):
+        for c in range(1, img_cols - 1):
+            min_val = 255
+
+            for filter_r in range(filter_rows):
+                for filter_c in range(filter_cols):
+                    val = img[r - 1 + filter_r][c - 1 + filter_c] - filter[filter_r][filter_c]
+
+                    if val < min_val:
+                        min_val = val
+
+            eroded_image[r][c] = min_val
+
+    return eroded_image
+
+def handler_dilation(img, filter):
+    img_rows, img_cols = img.shape
+    filter_rows, filter_cols = filter.shape
+    
+    dilated_image = np.zeros((img_rows, img_cols), dtype=np.uint8)
+
+    for r in range(1, img_rows - 1):
+        for c in range(1, img_cols - 1):
+            max_val = 0
+
+            for filter_r in range(filter_rows):
+                for filter_c in range(filter_cols):
+                    val = img[r - 1 + filter_r][c - 1 + filter_c] + filter[filter_r][filter_c]
+
+                    if val > max_val:
+                        max_val = val
+
+            dilated_image[r][c] = max_val
+
+    return dilated_image
+
+def handler_opening(img, filter):
+    erosion_img = handler_erosion(img, filter)
+    opening_image = handler_dilation(erosion_img, filter)
+    return opening_image
+
+def handler_closing(img, filter):
+    dilation_img = handler_dilation(img, filter)
+    closing_image = handler_erosion(dilation_img, filter)
+    return closing_image
+
+# Виклик функцій для ручної реалізації
+eroded_image = handler_erosion(image, filter)
+dilated_image = handler_dilation(image, filter)
+opened_image = handler_opening(image, filter)
+closed_image = handler_closing(image, filter)
+
+# Відображення результатів
+cv2.imshow('Original Image', image)
+cv2.imshow('Erosion', eroded_image)
+cv2.imwrite("images/eroded_image.jpg", eroded_image)
+cv2.imshow('Dilation', dilated_image)
+cv2.imwrite("images/dilated_image.jpg", dilated_image)
+cv2.imshow('Opening', opened_image)
+cv2.imwrite("images/opened_image.jpg", opened_image)
+cv2.imshow('Closing', closed_image)
+cv2.imwrite("images/closed_image.jpg", closed_image)
+
+cv2.waitKey(0)
+cv2.destroyAllWindows()
