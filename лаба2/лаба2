@@ -5,15 +5,31 @@ import numpy as np
 image = cv2.imread('images/1.jpg')
 
 # Отримання висоти та ширини зображення
-height, width = image.shape[:2]
+#height, width = image.shape[:2]
 
+
+def handler(img, filter):
+    image_height, image_width, _ = img.shape
+    filter_height, filter_width = filter.shape[:2]  # Отримати тільки висоту та ширину фільтра
+    
+    out_height = image_height - filter_height + 1
+    out_width = image_width - filter_width + 1
+
+    output_image = np.zeros((out_height, out_width))
+
+    for h in range(out_height):
+        for w in range(out_width):
+            st = img[h:h + filter_height, w:w + filter_width, :]
+            output_image[h, w] = np.sum(st * filter[:, :, np.newaxis])
+
+    return output_image
 
 
 # Задання матриці трансформації для зсуву
 shifted_filter = np.float32([[1, 0, 10], [0, 1, 20], [0, 0, 1]])
 
 # Застосування зсуву до зображення
-shifted_result = cv2.warpAffine(image, shifted_filter[:2, :], (image.shape[1], image.shape[0]))
+shifted_result = handler(image, shifted_filter)
 
 
 
@@ -21,7 +37,7 @@ shifted_result = cv2.warpAffine(image, shifted_filter[:2, :], (image.shape[1], i
 inversion_filter = np.array([[0, 1, 0], [1, -4, 1], [0, 1, 0]], dtype=np.float32)
 
 # Застосування фільтру
-inversion_result = cv2.filter2D(image, -1, inversion_filter)
+inversion_result = handler(image, inversion_filter)
 
 
 # Створення матриці фільтру Гаусса розміром 11x11
@@ -41,45 +57,48 @@ gauss_filter = np.array([
 
 # Застосування фільтру до зображення
 
-gauss_result = cv2.filter2D(image, -1, gauss_filter)
+gauss_result = handler(image, gauss_filter)
 
 
 # Матриця Розмиття "рух по дiагоналi"(розмiр фiльтра 7х7)
-blur_filter = np.array([[1, 0, 0, 0, 0, 0, 0],
- [0, 1, 0, 0, 0, 0, 0],
- [0, 0, 1, 0, 0, 0, 0],
- [0, 0, 0, 1, 0, 0, 0],
- [0, 0, 0, 0, 1, 0, 0],
- [0, 0, 0, 0, 0, 1, 0],
- [0, 0, 0, 0, 0, 0, 1]], dtype=np.float32) * (1/3) 
+blur_filter = np.array([
+    [1, 0, 0, 0, 0, 0, 0],
+    [0, 1, 0, 0, 0, 0, 0],
+    [0, 0, 1, 0, 0, 0, 0],
+    [0, 0, 0, 1, 0, 0, 0],
+    [0, 0, 0, 0, 1, 0, 0],
+    [0, 0, 0, 0, 0, 1, 0],
+    [0, 0, 0, 0, 0, 0, 1]], dtype=np.float32) * (1/3) 
 
 # Застосування фільтру до зображення
-blur_result = cv2.filter2D(image, -1, blur_filter)
+blur_result = handler(image, blur_filter)
 
 
 # Створення фільтру підвищення різкості
 sharp_filter = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]], dtype=np.float32)
 
 # Застосування фільтру
-sharp_result = cv2.filter2D(image, -1, sharp_filter)
+sharp_result = handler(image, sharp_filter)
 
 
 # Створення фільтру Собеля
-sobel_filter = np.array([[-1, 0, 1],
-[-2, 0, 2],
-[-1, 0, 1]])
+sobel_filter = np.array([
+    [-1, 0, 1],
+    [-2, 0, 2],
+    [-1, 0, 1]])
 
 # Застосування фільтру Собеля до зображення
-sobel_result = cv2.filter2D(image, -1, sobel_filter)
+sobel_result = handler(image, sobel_filter)
 
 
 # Створення фільтра "Границі"
-border_filter = np.array([[-1, -1, -1],
-[-1,  8, -1],
-[-1, -1, -1]])
+border_filter = np.array([
+    [-1, -1, -1],
+    [-1,  8, -1],
+    [-1, -1, -1]])
 
 # Застосування фільтра
-border_result = cv2.filter2D(image, -1, border_filter)
+border_result = handler(image, border_filter)
 
 
 # Створення матриці фільтру розрізнення
@@ -90,7 +109,7 @@ cut_filter = np.array([
 ])
 
 # Застосування фільтру до зображення
-cut_result = cv2.filter2D(image, -1, cut_filter)
+cut_result = handler(image, cut_filter)
 
 
 
