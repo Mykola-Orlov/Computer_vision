@@ -4,9 +4,6 @@ import numpy as np
 # Завантаження зображення
 image = cv2.imread('images/1.jpg')
 
-# Отримання висоти та ширини зображення
-#height, width = image.shape[:2]
-
 
 def handler(img, filter):
     image_height, image_width, _ = img.shape
